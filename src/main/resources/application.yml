@@ -1,0 +1,37 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: eco-circular
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ecocircular_db
+    username: eco_user
+    password: eco_pass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Flyway maneja el esquema
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: public
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+# JWT
+app:
+  jwt:
+    secret: c2VjcmV0LWtleS1mb3ItZWNvLWNpcmN1bGFyLXRoaXMtaXMtYS1sb25nLXNlY3JldC1rZXk=
+    expiration-ms: 86400000  # 24h
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
