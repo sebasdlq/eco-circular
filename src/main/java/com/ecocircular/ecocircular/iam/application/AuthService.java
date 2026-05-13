@@ -26,6 +26,9 @@ public class AuthService {
         if (!Objects.equals(password, user.getPasswordHash())) {
             throw new RuntimeException("Credenciales inválidas");
         }
+//        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+//            throw new RuntimeException("Credenciales inválidas");
+//        }
 
         List<UserTenantRole> roles = userTenantRoleRepository.findByUserId(user.getId());
         // Filtrar por tenant si se especifica, o tomar el active_tenant_id

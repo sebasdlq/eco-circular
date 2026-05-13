@@ -18,6 +18,9 @@ public class User {
     private String displayName;
     private String passwordHash;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @Column(name = "active_tenant_id")
     private UUID activeTenantId;   // tenant actual seleccionado
 
