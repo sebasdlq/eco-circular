@@ -7,5 +7,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserTenantRoleRepository extends JpaRepository<UserTenantRole, UUID> {
+
     List<UserTenantRole> findByUserId(UUID userId);
+
+    List<UserTenantRole> findByTenantId(UUID tenantId);
 }
