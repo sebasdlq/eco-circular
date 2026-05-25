@@ -1,5 +1,6 @@
 package com.ecocircular.ecocircular.recyclingops.application;
 
+import com.ecocircular.ecocircular.common.base.TenantContext;
 import com.ecocircular.ecocircular.iam.domain.User;
 import com.ecocircular.ecocircular.iam.infrastructure.persistence.UserRepository;
 import com.ecocircular.ecocircular.recyclingops.domain.*;
@@ -27,6 +28,15 @@ public class DeliveryService {
     // ------------------------------------------------------------------ //
     //  CRUD                                                                //
     // ------------------------------------------------------------------ //
+
+    public List<DeliveryResponse> getAllByCurrentTenant() {
+        // Obtener el tenant del contexto de seguridad
+        UUID tenantId = TenantContext.getTenantId(); // ajusta según tu implementación
+        List<Delivery> deliveries = deliveryRepository.findByGreenPoint_TenantId(tenantId);
+        return deliveries.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
 
     @Transactional
     public DeliveryResponse crear(DeliveryCreateRequest request) {

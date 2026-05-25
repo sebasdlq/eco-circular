@@ -15,10 +15,10 @@ import java.util.UUID;
 @Getter @Setter
 public class Delivery extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "green_point_id", nullable = false)
     private GreenPoint greenPoint;
 

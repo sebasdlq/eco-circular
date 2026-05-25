@@ -24,6 +24,13 @@ public class DeliveryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(deliveryService.crear(request));
     }
 
+    @GetMapping
+    @PreAuthorize("hasRole('GREEN_POINT_ADMIN') or hasRole('MUNICIPALITY_ADMIN')")
+    public ResponseEntity<List<DeliveryResponse>> listAllByTenant() {
+        List<DeliveryResponse> deliveries = deliveryService.getAllByCurrentTenant();
+        return ResponseEntity.ok(deliveries);
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('GREEN_POINT_ADMIN')")
     public ResponseEntity<DeliveryResponse> obtenerPorId(@PathVariable UUID id) {

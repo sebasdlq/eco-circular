@@ -10,7 +10,7 @@ import java.util.UUID;
 @Getter @Setter @NoArgsConstructor
 public class DeliveryDetail {
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "material_id", nullable = false)
     private MaterialCatalog material;
 

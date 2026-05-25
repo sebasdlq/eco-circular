@@ -11,7 +11,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: validate  # Flyway maneja el esquema
+      ddl-auto: update  # Flyway maneja el esquema
     open-in-view: false
     properties:
       hibernate:
