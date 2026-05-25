@@ -21,8 +21,8 @@ public class User {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    @Column(name = "active_tenant_id")
-    private UUID activeTenantId;   // tenant actual seleccionado
+    @ManyToOne
+    private Tenant activeTenant;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 }

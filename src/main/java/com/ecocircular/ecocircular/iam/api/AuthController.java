@@ -15,9 +15,9 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
-        String token = authService.login(request.email(), request.password(), request.tenantId());
+        String token = authService.login(request.email(), request.password());
         return ResponseEntity.ok(Map.of("token", token));
     }
 
-    record LoginRequest(String email, String password, UUID tenantId) {}
+    record LoginRequest(String email, String password) {}
 }

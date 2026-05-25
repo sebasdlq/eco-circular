@@ -1,11 +1,14 @@
 package com.ecocircular.ecocircular.recyclingops.api;
 
 import com.ecocircular.ecocircular.recyclingops.application.MaterialService;
-import com.ecocircular.ecocircular.recyclingops.domain.MaterialCatalog;
+import com.ecocircular.ecocircular.recyclingops.dto.MaterialRequest;
+import com.ecocircular.ecocircular.recyclingops.dto.MaterialResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -13,24 +16,26 @@ import java.util.UUID;
 @RequestMapping("/api/materials")
 @RequiredArgsConstructor
 public class MaterialController {
+
     private final MaterialService service;
 
     @GetMapping
-    public List<MaterialCatalog> list() {
+    public List<MaterialResponse> list() {
         return service.getMaterialsForCurrentTenant();
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('MANAGE_GREEN_POINTS')") // según PDF
+    @PreAuthorize("hasAuthority('MANAGE_GREEN_POINTS')")
     @ResponseStatus(HttpStatus.CREATED)
-    public MaterialCatalog create(@RequestBody MaterialCatalog material) {
-        return service.createMaterial(material);
+    public MaterialResponse create(@Valid @RequestBody MaterialRequest request) {
+        return service.createMaterial(request);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('MANAGE_GREEN_POINTS')")
-    public MaterialCatalog update(@PathVariable UUID id, @RequestBody MaterialCatalog material) {
-        return service.updateMaterial(id, material);
+    public MaterialResponse update(@PathVariable UUID id,
+                                   @Valid @RequestBody MaterialRequest request) {
+        return service.updateMaterial(id, request);
     }
 
     @DeleteMapping("/{id}")

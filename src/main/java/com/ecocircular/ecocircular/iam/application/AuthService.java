@@ -1,5 +1,6 @@
 package com.ecocircular.ecocircular.iam.application;
 
+import com.ecocircular.ecocircular.iam.domain.Tenant;
 import com.ecocircular.ecocircular.iam.domain.User;
 import com.ecocircular.ecocircular.iam.domain.UserTenantRole;
 import com.ecocircular.ecocircular.iam.infrastructure.persistence.*;
@@ -18,7 +19,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public String login(String email, String password, UUID tenantId) {
+    public String login(String email, String password) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));
         //No Hashea
@@ -31,16 +32,18 @@ public class AuthService {
 //        }
 
         List<UserTenantRole> roles = userTenantRoleRepository.findByUserId(user.getId());
+
+        Tenant tenant;
         // Filtrar por tenant si se especifica, o tomar el active_tenant_id
         UserTenantRole currentRole = roles.stream()
-                .filter(r -> r.getTenant().getId().equals(tenantId))
+                .filter(r -> r.getTenant().getId().equals(user.getActiveTenant().getId()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Usuario sin acceso a este tenant"));
 
         List<String> roleList = List.of(currentRole.getRole());
         List<String> permissionList = getPermissionsForRole(currentRole.getRole());
 
-        return jwtService.generateToken(email, user.getId(), tenantId, roleList, permissionList);
+        return jwtService.generateToken(email, user.getId(), user.getActiveTenant().getId(), roleList, permissionList);
     }
 
     private List<String> getPermissionsForRole(String role) {

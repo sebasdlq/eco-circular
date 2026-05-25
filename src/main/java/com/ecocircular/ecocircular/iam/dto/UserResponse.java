@@ -11,6 +11,7 @@ public class UserResponse {
     private String email;
     private String displayName;
     private UUID activeTenantId;
+    private String activeTenantName;
     private LocalDateTime createdAt;
     // no se expone passwordHash ni deletedAt
 }

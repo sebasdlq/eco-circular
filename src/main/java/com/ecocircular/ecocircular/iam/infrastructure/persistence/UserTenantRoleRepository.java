@@ -1,5 +1,7 @@
 package com.ecocircular.ecocircular.iam.infrastructure.persistence;
 
+import com.ecocircular.ecocircular.iam.domain.Tenant;
+import com.ecocircular.ecocircular.iam.domain.User;
 import com.ecocircular.ecocircular.iam.domain.UserTenantRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,4 +13,6 @@ public interface UserTenantRoleRepository extends JpaRepository<UserTenantRole, 
     List<UserTenantRole> findByUserId(UUID userId);
 
     List<UserTenantRole> findByTenantId(UUID tenantId);
+
+    boolean existsByUserAndTenantAndRole(User user, Tenant tenant, String role);
 }

@@ -11,11 +11,11 @@ import java.util.UUID;
 @Entity
 @Table(name = "tenants")
 @Getter @Setter @NoArgsConstructor
-public class Tenant {
+public class    Tenant {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
+//adios
     private String name;
     private String type;    // MUNICIPIO, ESCUELA, etc.
     @Column(columnDefinition = "JSONB")

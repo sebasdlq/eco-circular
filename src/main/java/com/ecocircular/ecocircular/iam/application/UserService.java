@@ -1,12 +1,15 @@
 // com.ecocircular.ecocircular.iam.application.UserService.java
 package com.ecocircular.ecocircular.iam.application;
 
+import com.ecocircular.ecocircular.iam.domain.Tenant;
 import com.ecocircular.ecocircular.iam.domain.User;
 import com.ecocircular.ecocircular.iam.dto.UserCreateRequest;
 import com.ecocircular.ecocircular.iam.dto.UserResponse;
 import com.ecocircular.ecocircular.iam.dto.UserUpdateRequest;
+import com.ecocircular.ecocircular.iam.infrastructure.persistence.TenantRepository;
 import com.ecocircular.ecocircular.iam.infrastructure.persistence.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,7 +22,9 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-
+    @Autowired
+    private final TenantRepository tenantRepository;
+    @Autowired
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -33,8 +38,13 @@ public class UserService {
         User user = new User();
         user.setEmail(request.getEmail());
         user.setDisplayName(request.getDisplayName());
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setActiveTenantId(request.getActiveTenantId());
+        user.setPasswordHash(request.getPassword());
+        // Resolver el Tenant desde el UUID del request
+        if (request.getActiveTenantId() != null) {
+            Tenant tenant = tenantRepository.findById(request.getActiveTenantId())
+                    .orElseThrow(() -> new RuntimeException("Tenant not found"));
+            user.setActiveTenant(tenant);
+        }
         user.setCreatedAt(LocalDateTime.now());
         // deletedAt = null por defecto
 
@@ -71,7 +81,11 @@ public class UserService {
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         }
-        user.setActiveTenantId(request.getActiveTenantId());
+        if (request.getActiveTenantId() != null) {
+            Tenant tenant = tenantRepository.findById(request.getActiveTenantId())
+                    .orElseThrow(() -> new RuntimeException("Tenant not found"));
+            user.setActiveTenant(tenant);
+        }
 
         User updated = userRepository.save(user);
         return toResponse(updated);
@@ -90,8 +104,12 @@ public class UserService {
         response.setId(user.getId());
         response.setEmail(user.getEmail());
         response.setDisplayName(user.getDisplayName());
-        response.setActiveTenantId(user.getActiveTenantId());
         response.setCreatedAt(user.getCreatedAt());
+
+        if (user.getActiveTenant() != null) {
+            response.setActiveTenantId(user.getActiveTenant().getId());
+            response.setActiveTenantName(user.getActiveTenant().getName());
+        }
         return response;
     }
 }
