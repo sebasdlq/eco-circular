@@ -37,6 +37,7 @@ public class DataInitializer implements ApplicationRunner {
         Tenant adminTenant = resolveAdminTenant();
         User   superUser   = resolveSuperUser(adminTenant);
         resolveAdminRole(superUser, adminTenant);
+        resolveAdmin2Role(superUser, adminTenant);
     }
 
     // ------------------------------------------------------------------ //
@@ -93,6 +94,24 @@ public class DataInitializer implements ApplicationRunner {
             role.setAssignedBy(user.getId()); // se auto-asigna
             userTenantRoleRepository.save(role);
             log.info("[DataInitializer] Rol {} asignado a {}", ADMIN_ROLE, user.getEmail());
+        } else {
+            log.info("[DataInitializer] Setup ya existente — sin cambios.");
+        }
+    }
+
+    private void resolveAdmin2Role(User user, Tenant tenant) {
+        boolean roleExists = userTenantRoleRepository
+                .existsByUserAndTenantAndRole(user, tenant, "ADMIN");
+
+        if (!roleExists) {
+            UserTenantRole role = new UserTenantRole();
+            role.setUser(user);
+            role.setTenant(tenant);
+            role.setRole("ADMIN");
+            role.setAssignedAt(LocalDateTime.now());
+            role.setAssignedBy(user.getId()); // se auto-asigna
+            userTenantRoleRepository.save(role);
+            log.info("[DataInitializer] Rol {} asignado a {}", "ADMIN", user.getEmail());
         } else {
             log.info("[DataInitializer] Setup ya existente — sin cambios.");
         }

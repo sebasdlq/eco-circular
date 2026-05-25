@@ -22,32 +22,32 @@ public class TenantController {
 
 
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_MUNICIPALITY_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MUNICIPALITY_ADMIN') or hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     public Tenant create(@RequestBody Tenant tenant) {
         return tenantService.create(tenant);
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_MUNICIPALITY_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MUNICIPALITY_ADMIN') or hasRole('ADMIN')")
     public List<Tenant> listAll() {
         return tenantService.listAll();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_MUNICIPALITY_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MUNICIPALITY_ADMIN') or hasRole('ADMIN')")
     public Tenant getById(@PathVariable UUID id) {
         return tenantService.getById(id);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_MUNICIPALITY_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MUNICIPALITY_ADMIN') or hasRole('ADMIN')")
     public Tenant update(@PathVariable UUID id, @RequestBody Tenant tenant) {
         return tenantService.update(id, tenant);
     }
 
     @PatchMapping("/{id}/disable")
-    @PreAuthorize("hasRole('ROLE_MUNICIPALITY_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MUNICIPALITY_ADMIN') or hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void disable(@PathVariable UUID id) {
         tenantService.disable(id);
@@ -55,24 +55,24 @@ public class TenantController {
 
 
     @GetMapping("/current/roles")
-    @PreAuthorize("hasRole('ROLE_MUNICIPALITY_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_MUNICIPALITY_ADMIN') or hasRole('ADMIN')")
     public List<UserTenantRole> listRoles() {
         return tenantService.listRolesInCurrentTenant();
     }
 
     @PostMapping("/current/roles")
-    @PreAuthorize("hasAuthority('MANAGE_ZONES')")
+    @PreAuthorize("hasAuthority('MANAGE_ZONES') or hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     public UserTenantRole assignRole(
             @RequestBody AssignRoleRequest request,
             @AuthenticationPrincipal String email
     ) {
 
-        return tenantService.assignRole(request.userId(), request.role(), request.assignedBy());
+        return tenantService.assignRole(request.userId(), request.role(), request.assignedBy(), request.tenantId());
     }
 
     @DeleteMapping("/current/roles/{userTenantRoleId}")
-    @PreAuthorize("hasAuthority('MANAGE_ZONES')")
+    @PreAuthorize("hasAuthority('MANAGE_ZONES') or hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void revokeRole(@PathVariable UUID userTenantRoleId) {
         tenantService.revokeRole(userTenantRoleId);
@@ -80,5 +80,5 @@ public class TenantController {
 
 
 
-    record AssignRoleRequest(UUID userId, String role, UUID assignedBy) {}
+    record AssignRoleRequest(UUID userId, String role, UUID assignedBy, UUID tenantId) {}
 }

@@ -1,6 +1,7 @@
 package com.ecocircular.ecocircular.recyclingops.domain;
 
 import com.ecocircular.ecocircular.common.base.BaseEntity;
+import com.ecocircular.ecocircular.iam.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,14 +15,19 @@ import java.util.UUID;
 @Getter @Setter
 public class Delivery extends BaseEntity {
 
-    private UUID userId;            // Referencia a User (por ID)
-    private UUID greenPointId;      // Referencia a GreenPoint (por ID)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "green_point_id", nullable = false)
+    private GreenPoint greenPoint;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private DeliveryStatus status;
 
     // DeliveryDetail es un value object — se embebe en la misma tabla como JSONB
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "delivery_details", joinColumns = @JoinColumn(name = "delivery_id"))
     private List<DeliveryDetail> details = new ArrayList<>();
 

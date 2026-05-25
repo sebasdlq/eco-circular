@@ -21,7 +21,7 @@ public class UserTenantRole {
     @JoinColumn(name = "tenant_id")
     private Tenant tenant;
 
-    private String role;          // ROLE_MUNICIPALITY_ADMIN, etc.
+    private String role;          // ROLE_MUNICIPALITY_ADMIN, GREEN_POINT, MEMBER.
     private LocalDateTime assignedAt = LocalDateTime.now();
     private UUID assignedBy;      // usuario que asignó
 }

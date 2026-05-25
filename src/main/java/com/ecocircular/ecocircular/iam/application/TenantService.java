@@ -63,8 +63,7 @@ public class TenantService {
 
 
     @Transactional
-    public UserTenantRole assignRole(UUID userId, String role, UUID assignedBy) {
-        UUID tenantId = TenantContext.getTenantId();
+    public UserTenantRole assignRole(UUID userId, String role, UUID assignedBy, UUID tenantId) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + userId));
