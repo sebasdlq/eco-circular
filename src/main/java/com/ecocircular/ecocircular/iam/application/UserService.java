@@ -58,6 +58,11 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return toResponse(user);
     }
+    public UserResponse getUserByEmail(String email){
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return toResponse(user);
+    }
 
     @Transactional(readOnly = true)
     public Page<UserResponse> getAllUsers(Pageable pageable) {

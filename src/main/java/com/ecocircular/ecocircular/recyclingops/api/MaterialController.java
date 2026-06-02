@@ -25,7 +25,7 @@ public class MaterialController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('MANAGE_GREEN_POINTS')")
+    @PreAuthorize("hasAuthority('MANAGE_GREEN_POINTS') or has('ROLE_MUNICIPALITY_ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     public MaterialResponse create(@Valid @RequestBody MaterialRequest request) {
         return service.createMaterial(request);

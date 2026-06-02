@@ -37,6 +37,12 @@ public class DeliveryService {
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
+    public List<DeliveryResponse> obtenerPorUserId(UUID id) {// Obtén el ID del usuario autenticado
+        List<Delivery> deliveries = deliveryRepository.findByUserId(id);
+        return deliveries.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
 
     @Transactional
     public DeliveryResponse crear(DeliveryCreateRequest request) {

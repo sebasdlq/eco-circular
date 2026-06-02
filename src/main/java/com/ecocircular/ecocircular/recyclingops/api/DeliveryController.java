@@ -37,6 +37,11 @@ public class DeliveryController {
         return ResponseEntity.ok(deliveryService.obtenerPorId(id));
     }
 
+    @GetMapping("/user/{id}")
+    public ResponseEntity<List<DeliveryResponse>> obtenerPorUser(@PathVariable UUID id) {
+        return ResponseEntity.ok(deliveryService.obtenerPorUserId(id));
+    }
+
     @PatchMapping("/{id}/validar")
     public ResponseEntity<DeliveryResponse> validar(@PathVariable UUID id) {
         return ResponseEntity.ok(deliveryService.validar(id));

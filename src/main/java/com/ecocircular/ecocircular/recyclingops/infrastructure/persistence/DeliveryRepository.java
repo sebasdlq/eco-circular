@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface DeliveryRepository extends JpaRepository<Delivery, UUID> {
     List<Delivery> findByGreenPoint_TenantId(UUID tenantId);
+    List<Delivery> findByUserId(UUID userId);
 }
