@@ -17,8 +17,8 @@ public class DeliveryDetailRequest {
     @Positive(message = "La cantidad debe ser positiva")
     private double quantity;
 
-    @Positive(message = "Los puntos deben ser positivos")
-    private int pointsEarned;
-
+    // ✅ Eliminadas las validaciones de pointsEarned y co2Estimated
+    // El backend los calcula automáticamente desde material_catalog
+    private Integer pointsEarned;
     private BigDecimal co2Estimated;
 }

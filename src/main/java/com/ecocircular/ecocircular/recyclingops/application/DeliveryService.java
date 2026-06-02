@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -30,11 +32,10 @@ public class DeliveryService {
     // ------------------------------------------------------------------ //
 
     public List<DeliveryResponse> getAllByCurrentTenant() {
-        // Obtener el tenant del contexto de seguridad
-        UUID tenantId = TenantContext.getTenantId(); // ajusta según tu implementación
+        UUID tenantId = TenantContext.getTenantId();
         List<Delivery> deliveries = deliveryRepository.findByGreenPoint_TenantId(tenantId);
         return deliveries.stream()
-                .map(this::toResponse)
+                .map(this::toPublicResponse)
                 .collect(Collectors.toList());
     }
 
@@ -51,26 +52,26 @@ public class DeliveryService {
         delivery.setGreenPoint(greenPoint);
         delivery.setDetails(toDetailEntities(request.getDetails()));
 
-        return toResponse(deliveryRepository.save(delivery));
+        return toPublicResponse(deliveryRepository.save(delivery));
     }
 
     @Transactional(readOnly = true)
     public DeliveryResponse obtenerPorId(UUID id) {
-        return toResponse(findOrThrow(id));
+        return toPublicResponse(findOrThrow(id));
     }
 
     @Transactional
     public DeliveryResponse validar(UUID id) {
         Delivery delivery = findOrThrow(id);
         delivery.validarEntrega();
-        return toResponse(deliveryRepository.save(delivery));
+        return toPublicResponse(deliveryRepository.save(delivery));
     }
 
     @Transactional
     public DeliveryResponse ajustarCantidades(UUID id, List<DeliveryDetailRequest> newDetails) {
         Delivery delivery = findOrThrow(id);
         delivery.ajustarCantidades(toDetailEntities(newDetails));
-        return toResponse(deliveryRepository.save(delivery));
+        return toPublicResponse(deliveryRepository.save(delivery));
     }
 
     @Transactional
@@ -82,7 +83,7 @@ public class DeliveryService {
     }
 
     // ------------------------------------------------------------------ //
-    //  Helpers                                                             //
+    //  Helpers — público para que CitizenService pueda reutilizarlo        //
     // ------------------------------------------------------------------ //
 
     private Delivery findOrThrow(UUID id) {
@@ -98,13 +99,21 @@ public class DeliveryService {
             DeliveryDetail detail = new DeliveryDetail();
             detail.setMaterial(material);
             detail.setQuantity(req.getQuantity());
-            detail.setPointsEarned(req.getPointsEarned());
-            detail.setCo2Estimated(req.getCo2Estimated());
+
+            // Calcular puntos y CO2 desde el catálogo
+            int points = (int) Math.round(req.getQuantity() * material.getPointsPerUnit());
+            BigDecimal co2 = BigDecimal.valueOf(req.getQuantity() * material.getCo2Factor())
+                    .setScale(4, RoundingMode.HALF_UP);
+
+            detail.setPointsEarned(points);
+            detail.setCo2Estimated(co2);
+
             return detail;
         }).collect(Collectors.toList());
     }
 
-    private DeliveryResponse toResponse(Delivery d) {
+    // ✅ público para reutilizar en CitizenService
+    public DeliveryResponse toPublicResponse(Delivery d) {
         DeliveryResponse res = new DeliveryResponse();
         res.setId(d.getId());
         res.setUserId(d.getUser().getId());

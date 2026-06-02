@@ -24,12 +24,12 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));
         //No Hashea
 
-        if (!Objects.equals(password, user.getPasswordHash())) {
-            throw new RuntimeException("Credenciales inválidas");
-        }
-//        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+//        if (!Objects.equals(password, user.getPasswordHash())) {
 //            throw new RuntimeException("Credenciales inválidas");
 //        }
+        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+            throw new RuntimeException("Credenciales inválidas");
+        }
 
         List<UserTenantRole> roles = userTenantRoleRepository.findByUserId(user.getId());
 
@@ -52,10 +52,11 @@ public class AuthService {
             case "ROLE_MUNICIPALITY_ADMIN" -> List.of("CREATE_CAMPAIGN", "MANAGE_GREEN_POINTS",
                     "VIEW_ALL_ANALYTICS", "MANAGE_ZONES", "VIEW_AUDIT_TRAIL", "EXPORT_REPORTS");
             case "ROLE_GREEN_POINT_OPERATOR" -> List.of("VALIDATE_DELIVERY", "VIEW_LOCAL_HISTORY",
-                    "REPORT_INCIDENT", "MANAGE_BATCH");
+                    "REPORT_INCIDENT", "MANAGE_BATCH","INIT_DELIVERY");
             case "ROLE_RECYCLER" -> List.of("RECEIVE_BATCH", "REPORT_PROCESSING",
                     "VIEW_DEMAND_FORECAST", "UPDATE_MATERIAL_DEMAND");
             case "ROLE_CITIZEN" -> List.of("INIT_DELIVERY", "VIEW_OWN_IMPACT", "VIEW_RANKING", "JOIN_MISSIONS");
+
             default -> List.of();
         };
     }

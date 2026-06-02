@@ -5,9 +5,9 @@ spring:
   application:
     name: eco-circular
   datasource:
-    url: jdbc:postgresql://localhost:5432/ecocircular_db
-    username: eco_user
-    password: eco_pass
+    url: jdbc:postgresql://localhost:5432/proyectoti
+    username: postgres
+    password: root
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:

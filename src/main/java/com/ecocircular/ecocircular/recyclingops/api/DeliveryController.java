@@ -25,14 +25,14 @@ public class DeliveryController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('GREEN_POINT_ADMIN') or hasRole('MUNICIPALITY_ADMIN')")
+    @PreAuthorize("hasAuthority('VALIDATE_DELIVERY') or hasAuthority('VIEW_ALL_ANALYTICS')")
     public ResponseEntity<List<DeliveryResponse>> listAllByTenant() {
         List<DeliveryResponse> deliveries = deliveryService.getAllByCurrentTenant();
         return ResponseEntity.ok(deliveries);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('GREEN_POINT_ADMIN')")
+    @PreAuthorize("hasAuthority('VALIDATE_DELIVERY')")
     public ResponseEntity<DeliveryResponse> obtenerPorId(@PathVariable UUID id) {
         return ResponseEntity.ok(deliveryService.obtenerPorId(id));
     }
