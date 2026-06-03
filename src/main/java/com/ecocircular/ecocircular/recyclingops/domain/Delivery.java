@@ -8,7 +8,6 @@ import lombok.*;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "deliveries")
@@ -18,6 +17,7 @@ public class Delivery extends BaseEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "green_point_id", nullable = false)
     private GreenPoint greenPoint;
@@ -26,9 +26,7 @@ public class Delivery extends BaseEntity {
     @Column(nullable = false)
     private DeliveryStatus status;
 
-    // DeliveryDetail es un value object — se embebe en la misma tabla como JSONB
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "delivery_details", joinColumns = @JoinColumn(name = "delivery_id"))
+    @OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<DeliveryDetail> details = new ArrayList<>();
 
     private ZonedDateTime deliveredAt;
@@ -52,7 +50,10 @@ public class Delivery extends BaseEntity {
         if (status != DeliveryStatus.VALIDATED) {
             throw new IllegalStateException("Delivery must be VALIDATED to adjust");
         }
-        this.details = newDetails;
+        // Limpiar los detalles actuales y agregar los nuevos manteniendo la referencia al delivery
+        this.details.clear();
+        newDetails.forEach(d -> d.setDelivery(this));
+        this.details.addAll(newDetails);
         this.status = DeliveryStatus.ADJUSTED;
     }
 }
