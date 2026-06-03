@@ -7,6 +7,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
 import java.util.stream.Collectors;
@@ -45,6 +46,15 @@ public class GlobalExceptionHandler {
         pd.setType(URI.create("urn:ecocircular:not-found"));
         pd.setTitle("Recurso no encontrado");
         pd.setDetail(ex.getMessage());
+        return pd;
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ProblemDetail handleResponseStatus(ResponseStatusException ex) {
+        ProblemDetail pd = ProblemDetail.forStatus(ex.getStatusCode());
+        pd.setType(URI.create("urn:ecocircular:invalid-request"));
+        pd.setTitle("Solicitud inválida");
+        pd.setDetail(ex.getReason());
         return pd;
     }
 

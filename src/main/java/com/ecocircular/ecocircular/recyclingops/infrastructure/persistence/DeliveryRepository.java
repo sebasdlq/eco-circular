@@ -1,6 +1,7 @@
 package com.ecocircular.ecocircular.recyclingops.infrastructure.persistence;
 
 import com.ecocircular.ecocircular.recyclingops.domain.Delivery;
+import com.ecocircular.ecocircular.recyclingops.domain.DeliveryStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,6 +16,9 @@ public interface DeliveryRepository extends JpaRepository<Delivery, UUID> {
 
     // ✅ Nuevo — historial del ciudadano logueado
     List<Delivery> findByUser_IdOrderByDeliveredAtDesc(UUID userId);
+
+    // Used by gamification adapter — all non-draft deliveries for a user within a tenant
+    List<Delivery> findByUser_IdAndGreenPoint_TenantIdAndStatusNot(UUID userId, UUID tenantId, DeliveryStatus status);
 
     // ✅ Nuevo — ranking del tenant (suma de puntos por usuario)
     @Query("""
