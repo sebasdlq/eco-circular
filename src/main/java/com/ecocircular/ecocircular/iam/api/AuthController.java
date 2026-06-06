@@ -1,6 +1,7 @@
 package com.ecocircular.ecocircular.iam.api;
 
 import com.ecocircular.ecocircular.iam.application.AuthService;
+import com.ecocircular.ecocircular.iam.application.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserService userService;
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(
@@ -22,6 +24,7 @@ public class AuthController {
 
         String clientIp = resolverIp(httpRequest);
         String token = authService.login(request.email(), request.password(), clientIp);
+
         return ResponseEntity.ok(Map.of("token", token));
     }
 

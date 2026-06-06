@@ -38,7 +38,7 @@ public class UserService {
         User user = new User();
         user.setEmail(request.getEmail());
         user.setDisplayName(request.getDisplayName());
-        user.setPasswordHash(request.getPassword());
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         // Resolver el Tenant desde el UUID del request
         if (request.getActiveTenantId() != null) {
             Tenant tenant = tenantRepository.findById(request.getActiveTenantId())

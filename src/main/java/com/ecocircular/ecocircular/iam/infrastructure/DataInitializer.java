@@ -68,7 +68,7 @@ public class DataInitializer implements ApplicationRunner {
                     User user = new User();
                     user.setEmail(SUPER_USER_EMAIL);
                     user.setDisplayName("Super Admin");
-                    user.setPasswordHash(SUPER_USER_PASS);
+                    user.setPasswordHash(passwordEncoder.encode(SUPER_USER_PASS));
                     user.setActiveTenant(adminTenant);
                     user.setCreatedAt(LocalDateTime.now());
                     User saved = userRepository.save(user);
