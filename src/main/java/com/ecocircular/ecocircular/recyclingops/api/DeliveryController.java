@@ -36,7 +36,6 @@ public class DeliveryController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('GREEN_POINT_OPERATOR')")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<DeliveryResponse> crear(@Valid @RequestBody DeliveryCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -44,7 +43,6 @@ public class DeliveryController {
     }
 
     @PostMapping("/{id}/validar")
-    @PreAuthorize("hasRole('GREEN_POINT_OPERATOR')")
     public ResponseEntity<DeliveryResponse> validar(@PathVariable UUID id) {
         return ResponseEntity.ok(deliveryService.validar(id));
     }
