@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "delivery_details")
 @Getter @Setter @NoArgsConstructor
+@AttributeOverride(name = "tenantId", column = @Column(name = "tenant_id", insertable = false, updatable = false))
+@AttributeOverride(name = "id", column = @Column(name = "tenant_id", insertable = false, updatable = false))
 public class DeliveryDetail extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)

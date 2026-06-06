@@ -25,12 +25,18 @@ public class DeliveryController {
         return ResponseEntity.ok(deliveryService.getAllByCurrentTenant());
     }
 
+    @GetMapping("/user/{id}")
+    public ResponseEntity<List<DeliveryResponse>> listarPorUsuario(@PathVariable UUID id) {
+        return ResponseEntity.ok(deliveryService.obtenerPorUserId(id));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<DeliveryResponse> obtener(@PathVariable UUID id) {
         return ResponseEntity.ok(deliveryService.obtenerPorId(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('GREEN_POINT_OPERATOR')")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<DeliveryResponse> crear(@Valid @RequestBody DeliveryCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -38,7 +44,7 @@ public class DeliveryController {
     }
 
     @PostMapping("/{id}/validar")
-    @PreAuthorize("hasAuthority('ROLE_GREEN_POINT_OPERATOR')")
+    @PreAuthorize("hasRole('GREEN_POINT_OPERATOR')")
     public ResponseEntity<DeliveryResponse> validar(@PathVariable UUID id) {
         return ResponseEntity.ok(deliveryService.validar(id));
     }

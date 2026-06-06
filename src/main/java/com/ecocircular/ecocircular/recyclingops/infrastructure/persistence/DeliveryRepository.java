@@ -33,4 +33,6 @@ public interface DeliveryRepository extends JpaRepository<Delivery, UUID> {
         ORDER BY totalPoints DESC
     """)
     List<Object[]> findRankingByTenant(@Param("tenantId") UUID tenantId);
+
+    List<Delivery> findByUserId(UUID id);
 }

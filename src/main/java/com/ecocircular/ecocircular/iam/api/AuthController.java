@@ -26,8 +26,9 @@ public class AuthController {
 
         String clientIp = resolverIp(httpRequest);
         String token = authService.login(request.email(), request.password(), clientIp);
+        UserResponse user = userService.getUserByEmail(request.email);
 
-        return ResponseEntity.ok(Map.of("token", token));
+        return ResponseEntity.ok(Map.of("token", token, "id", user.getId().toString(), "name", user.getDisplayName()));
     }
 
     private String resolverIp(HttpServletRequest request) {
@@ -37,6 +38,21 @@ public class AuthController {
         }
         return request.getRemoteAddr();
     }
+
+    @PostMapping("/register-tenant")
+    public ResponseEntity<Map<String, String>> registerToTenant(
+            @RequestBody RegisterTenantRequest request,
+            HttpServletRequest httpRequest) {
+
+        String clientIp = resolverIp(httpRequest);
+        Map<String, String> result = authService.registerToTenant(
+                request.email(), request.password(), request.tenantId(), clientIp
+        );
+        return ResponseEntity.ok(result);
+    }
+
+    // DTO
+    record RegisterTenantRequest(String email, String password, UUID tenantId) {}
 
     record LoginRequest(String email, String password) {}
 }

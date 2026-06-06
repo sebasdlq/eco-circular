@@ -45,7 +45,7 @@ public class DeliveryService {
     public List<DeliveryResponse> obtenerPorUserId(UUID id) {// Obtén el ID del usuario autenticado
         List<Delivery> deliveries = deliveryRepository.findByUserId(id);
         return deliveries.stream()
-                .map(this::toResponse)
+                .map(this::toPublicResponse)
                 .collect(Collectors.toList());
     }
 
@@ -75,13 +75,14 @@ public class DeliveryService {
         saved.getDetails().addAll(details);
         saved = deliveryRepository.save(saved);
 
-        auditService.registrar(
+        DeliveryResponse res = toPublicResponse(saved);
+       /* auditService.registrar(
                 "Delivery", saved.getId(), AuditEvents.ENTREGA_CREADA,
-                null, toPublicResponse(saved),
+                null, res,
                 tenantId, actorId, actorName, clientIp, null
-        );
+        );*/
 
-        return toPublicResponse(saved);
+        return res;
     }
 
     @Transactional(readOnly = true)

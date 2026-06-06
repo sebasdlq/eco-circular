@@ -2,15 +2,18 @@
 package com.ecocircular.ecocircular.iam.api;
 
 import com.ecocircular.ecocircular.iam.application.UserService;
+import com.ecocircular.ecocircular.iam.dto.AssignRoleRequest;
 import com.ecocircular.ecocircular.iam.dto.UserCreateRequest;
 import com.ecocircular.ecocircular.iam.dto.UserResponse;
 import com.ecocircular.ecocircular.iam.dto.UserUpdateRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -51,5 +54,14 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // En UserController.java
+
+    @PostMapping("/assign-role")
+    @PreAuthorize("hasAuthority('ROLE_MUNICIPALITY_ADMIN')")
+    public ResponseEntity<Void> assignRole(@Valid @RequestBody AssignRoleRequest request) {
+        userService.assignRoleToUserInCurrentTenant(request);
+        return ResponseEntity.ok().build();
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface UserTenantRoleRepository extends JpaRepository<UserTenantRole, UUID> {
@@ -21,4 +22,6 @@ public interface UserTenantRoleRepository extends JpaRepository<UserTenantRole, 
     // Eager-fetches user to avoid N+1 when building gamification activity for all tenant users
     @Query("SELECT utr FROM UserTenantRole utr JOIN FETCH utr.user WHERE utr.tenant.id = :tenantId")
     List<UserTenantRole> findByTenantIdWithUser(@Param("tenantId") UUID tenantId);
+
+    Optional<UserTenantRole> findByUserIdAndTenantId(UUID id, UUID tenantId);
 }
