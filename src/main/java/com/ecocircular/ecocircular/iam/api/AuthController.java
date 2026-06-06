@@ -2,6 +2,8 @@ package com.ecocircular.ecocircular.iam.api;
 
 import com.ecocircular.ecocircular.iam.application.AuthService;
 import com.ecocircular.ecocircular.iam.application.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import com.ecocircular.ecocircular.iam.application.UserService;
 import com.ecocircular.ecocircular.iam.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,15 +15,27 @@ import java.util.UUID;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
     private final AuthService authService;
     private final UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
-        String token = authService.login(request.email(), request.password());
-        UserResponse user = userService.getUserByEmail(request.email);
+    public ResponseEntity<Map<String, String>> login(
+            @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest) {          // ← nuevo: para obtener la IP
 
-        return ResponseEntity.ok(Map.of("token", token, "id", user.getId().toString(), "name", user.getDisplayName()));
+        String clientIp = resolverIp(httpRequest);
+        String token = authService.login(request.email(), request.password(), clientIp);
+
+        return ResponseEntity.ok(Map.of("token", token));
+    }
+
+    private String resolverIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 
     record LoginRequest(String email, String password) {}

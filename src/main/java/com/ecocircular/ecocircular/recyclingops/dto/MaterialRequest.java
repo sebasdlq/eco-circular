@@ -16,6 +16,7 @@ public class MaterialRequest {
     @NotBlank(message = "El nombre del material es obligatorio")
     private String name;
 
+    //@NotBlank(message = "La categoría es obligatoria")
     private String category;
 
     @NotBlank(message = "La unidad es obligatoria")

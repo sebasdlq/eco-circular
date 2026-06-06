@@ -1,7 +1,8 @@
 package com.ecocircular.ecocircular.iam.infrastructure.security;
 
-import com.ecocircular.ecocircular.iam.application.JwtService;
+import com.ecocircular.ecocircular.common.audit.AuditContext;
 import com.ecocircular.ecocircular.common.base.TenantContext;
+import com.ecocircular.ecocircular.iam.application.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,37 +28,62 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
             throws ServletException, IOException {
+
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             try {
                 var claims = jwtService.parseToken(token);
-                String email = claims.getSubject();
-                UUID userId = UUID.fromString(claims.get("user_id", String.class));
-                UUID tenantId = UUID.fromString(claims.get("tenant_id", String.class));
-                List<String> roles = claims.get("roles", List.class);
+
+                String email    = claims.getSubject();
+                UUID   userId   = UUID.fromString(claims.get("user_id",   String.class));
+                UUID   tenantId = UUID.fromString(claims.get("tenant_id", String.class));
+                List<String> roles       = claims.get("roles",       List.class);
                 List<String> permissions = claims.get("permissions", List.class);
 
+                // ── Contextos por request ──────────────────────────────
                 TenantContext.setTenantId(tenantId);
+                AuditContext.setActor(userId, email, resolverIp(request)); // ← NUEVO
 
                 var authorities = roles.stream()
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
-                // También agregar permisos como authorities para @PreAuthorize
                 permissions.stream()
                         .map(SimpleGrantedAuthority::new)
                         .forEach(authorities::add);
 
-                var authentication = new UsernamePasswordAuthenticationToken(email, null, authorities);
+                var authentication = new UsernamePasswordAuthenticationToken(
+                        email, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
             } catch (Exception e) {
-                // Token inválido, no autenticar
+                // Token inválido — no autenticar
             }
         }
-        filterChain.doFilter(request, response);
-        TenantContext.clear(); // limpiamos después de la petición
+
+        try {
+            filterChain.doFilter(request, response);
+        } finally {
+            // ── Limpiar ambos ThreadLocals siempre, incluso si hay excepción ──
+            TenantContext.clear();
+            AuditContext.clear(); // ← NUEVO
+        }
+    }
+
+    /**
+     * Resuelve la IP real del cliente.
+     * Si hay un proxy/load balancer, usa X-Forwarded-For;
+     * si no, usa getRemoteAddr() directamente.
+     */
+    private String resolverIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim(); // primera IP de la cadena
+        }
+        return request.getRemoteAddr();
     }
 }
