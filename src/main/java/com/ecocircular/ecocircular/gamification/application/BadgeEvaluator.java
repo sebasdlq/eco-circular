@@ -1,70 +1,79 @@
 package com.ecocircular.ecocircular.gamification.application;
 
+import com.ecocircular.ecocircular.common.audit.AuditContext;
+import com.ecocircular.ecocircular.common.audit.AuditEvents;
+import com.ecocircular.ecocircular.common.audit.AuditService;
+import com.ecocircular.ecocircular.gamification.api.dto.BadgeResponse;
 import com.ecocircular.ecocircular.gamification.application.port.UserRecyclingActivity;
 import com.ecocircular.ecocircular.gamification.domain.Badge;
 import com.ecocircular.ecocircular.gamification.domain.UserBadge;
-import org.springframework.stereotype.Component;
+import com.ecocircular.ecocircular.gamification.infrastructure.persistence.BadgeRepository;
+import com.ecocircular.ecocircular.gamification.infrastructure.persistence.UserBadgeRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 
-@Component
+@Slf4j
+
+@Service
+@RequiredArgsConstructor
 public class BadgeEvaluator {
 
-    private static final Badge PRIMER_RECICLAJE = new Badge(
-            UUID.fromString("10000000-0000-0000-0000-000000000001"),
-            "Primer Reciclaje", "Completaste tu primera entrega de reciclaje", "RECYCLE_1");
+    private final BadgeRepository     badgeRepository;
+    private final UserBadgeRepository userBadgeRepository;
+    private final AuditService        auditService;
 
-    private static final Badge RECICLADOR_FRECUENTE = new Badge(
-            UUID.fromString("10000000-0000-0000-0000-000000000002"),
-            "Reciclador Frecuente", "Completaste 10 entregas de reciclaje", "RECYCLE_10");
+    /**
+     * Evalúa qué badges merece el usuario, persiste los nuevos
+     * y devuelve la lista completa de badges ganados en el tenant.
+     */
+    @Transactional
+    public List<BadgeResponse> evaluate(UserRecyclingActivity activity, UUID tenantId) {
+        List<Badge> catalog = badgeRepository.findAvailableForTenant(tenantId);
 
-    private static final Badge GUARDIAN_PLANETA = new Badge(
-            UUID.fromString("10000000-0000-0000-0000-000000000003"),
-            "Guardián del Planeta", "Reciclaste 50 kg en total", "EARTH_50KG");
+        log.info("[BadgeEvaluator] Tenant: {} | Catálogo: {} badges | Deliveries del usuario: {}",
+                tenantId, catalog.size(), activity.getTotalDeliveries());
 
-    private static final Badge HEROE_CO2 = new Badge(
-            UUID.fromString("10000000-0000-0000-0000-000000000004"),
-            "Héroe del CO2", "Evitaste 25 kg de emisiones de CO2", "CO2_25KG");
+        for (Badge badge : catalog) {
+            boolean yaLoTiene = userBadgeRepository.existsByUserIdAndBadge_IdAndTenantId(
+                    activity.getUserId(), badge.getId(), tenantId);
+            boolean merece = merece(badge, activity);
 
-    private static final Badge EXPLORADOR_MATERIALES = new Badge(
-            UUID.fromString("10000000-0000-0000-0000-000000000005"),
-            "Explorador de Materiales", "Reciclaste 3 tipos distintos de materiales", "MATERIALS_3");
+            log.info("[BadgeEvaluator] Badge: '{}' | iconCode: '{}' | yaLoTiene: {} | merece: {}",
+                    badge.getName(), badge.getIconCode(), yaLoTiene, merece);
 
-    private static final Badge NIVEL_ORO = new Badge(
-            UUID.fromString("10000000-0000-0000-0000-000000000006"),
-            "Nivel Oro", "Alcanzaste el nivel Oro con 500 puntos", "GOLD_LEVEL");
+            if (!yaLoTiene && merece) {
+                UserBadge userBadge = new UserBadge(
+                        activity.getUserId(), badge, LocalDateTime.now());
+                userBadge.setTenantId(tenantId);
+                userBadgeRepository.save(userBadge);
+                log.info("[BadgeEvaluator] ✅ Badge otorgado: {}", badge.getName());
+            }
+        }
 
-    public List<UserBadge> evaluate(UserRecyclingActivity activity) {
-        List<UserBadge> earned = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-        UUID userId = activity.getUserId();
-
-        if (activity.getTotalDeliveries() >= 1)
-            earned.add(new UserBadge(userId, PRIMER_RECICLAJE, now));
-
-        if (activity.getTotalDeliveries() >= 10)
-            earned.add(new UserBadge(userId, RECICLADOR_FRECUENTE, now));
-
-        if (activity.getTotalKgRecycled() >= 50.0)
-            earned.add(new UserBadge(userId, GUARDIAN_PLANETA, now));
-
-        if (activity.getTotalCo2AvoidedKg() >= 25.0)
-            earned.add(new UserBadge(userId, HEROE_CO2, now));
-
-        if (activity.getMaterialsRecycled().size() >= 3)
-            earned.add(new UserBadge(userId, EXPLORADOR_MATERIALES, now));
-
-        if (activity.getTotalPoints() >= 500.0)
-            earned.add(new UserBadge(userId, NIVEL_ORO, now));
-
-        return earned;
+        return userBadgeRepository.findByUserIdAndTenantId(activity.getUserId(), tenantId)
+                .stream().map(BadgeResponse::from).toList();
+    }
+    /**
+     * Lógica de elegibilidad por badge.
+     * Para agregar un nuevo badge: agregar su iconCode al switch y definir la condición.
+     */
+    private boolean merece(Badge badge, UserRecyclingActivity a) {
+        return switch (badge.getIconCode()) {
+            case "RECYCLE_1"   -> a.getTotalDeliveries() >= 1;
+            case "RECYCLE_10"  -> a.getTotalDeliveries() >= 10;
+            case "EARTH_50KG"  -> a.getTotalKgRecycled() >= 50.0;
+            case "CO2_25KG"    -> a.getTotalCo2AvoidedKg() >= 25.0;
+            case "MATERIALS_3" -> a.getMaterialsRecycled().size() >= 3;
+            case "GOLD_LEVEL"  -> a.getTotalPoints() >= 500.0;
+            default            -> false; // badges sin lógica hardcodeada no se otorgan automáticamente
+        };
     }
 
-    public static List<Badge> getAllBadgeDefinitions() {
-        return List.of(PRIMER_RECICLAJE, RECICLADOR_FRECUENTE, GUARDIAN_PLANETA,
-                HEROE_CO2, EXPLORADOR_MATERIALES, NIVEL_ORO);
-    }
+    record BadgeSnapshot(UUID userId, UUID badgeId, String badgeName) {}
 }

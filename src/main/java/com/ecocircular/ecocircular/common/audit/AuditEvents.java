@@ -38,6 +38,8 @@ public final class AuditEvents {
     public static final String MISION_COMPLETADA   = "MISION_COMPLETADA";
     public static final String BADGE_OTORGADO      = "BADGE_OTORGADO";
     public static final String RANKING_ACTUALIZADO = "RANKING_ACTUALIZADO";
+    public static final String BADGE_CREADO  = "BADGE_CREADO";
+    public static final String MISION_CREADA = "MISION_CREADA";
 
     // ── Campaña ───────────────────────────────────────────────────────────
     public static final String CAMPANA_PUBLICADA = "CAMPANA_PUBLICADA";

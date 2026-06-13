@@ -26,17 +26,14 @@ public class GamificationController {
     }
 
     @GetMapping("/users/{userId}/badges")
-    public List<BadgeResponse> getUserBadges(@PathVariable UUID userId) {
-        return gamificationService.getBadges(TenantContext.getTenantId(), userId)
-                .stream().map(BadgeResponse::from).toList();
+    public List<BadgeResponse> getBadges(@PathVariable UUID userId) {
+        return gamificationService.getBadges(TenantContext.getTenantId(), userId);
     }
 
     @GetMapping("/users/{userId}/missions")
-    public List<MissionResponse> getUserMissions(@PathVariable UUID userId) {
-        return gamificationService.getMissions(TenantContext.getTenantId(), userId)
-                .stream().map(MissionResponse::from).toList();
+    public List<MissionResponse> getMissions(@PathVariable UUID userId) {
+        return gamificationService.getMissions(TenantContext.getTenantId(), userId);
     }
-
     @GetMapping("/users/{userId}/recommendation")
     public List<RecommendationResponse> getUserRecommendations(@PathVariable UUID userId) {
         return gamificationService.getRecommendations(TenantContext.getTenantId(), userId)

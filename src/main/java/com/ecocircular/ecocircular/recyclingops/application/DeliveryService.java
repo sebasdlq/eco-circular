@@ -20,6 +20,8 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import com.ecocircular.ecocircular.recyclingops.event.EntregaValidadaEvent;
+import org.springframework.context.ApplicationEventPublisher;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +32,7 @@ public class DeliveryService {
     private final GreenPointRepository      greenPointRepository;
     private final MaterialCatalogRepository materialCatalogRepository;
     private final AuditService              auditService;
-
+    private final ApplicationEventPublisher eventPublisher;
     // ------------------------------------------------------------------ //
     //  CRUD                                                                //
     // ------------------------------------------------------------------ //
@@ -107,6 +109,9 @@ public class DeliveryService {
                 "Delivery", saved.getId(), AuditEvents.ENTREGA_VALIDADA,
                 estadoAnterior, toPublicResponse(saved),
                 tenantId, actorId, actorName, clientIp, null
+        );
+        eventPublisher.publishEvent(
+                new EntregaValidadaEvent(saved.getUser().getId(), tenantId)
         );
 
         return toPublicResponse(saved);

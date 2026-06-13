@@ -2,6 +2,8 @@ package com.ecocircular.ecocircular.gamification.api;
 
 import com.ecocircular.ecocircular.common.base.TenantContext;
 import com.ecocircular.ecocircular.common.exception.GlobalExceptionHandler;
+import com.ecocircular.ecocircular.gamification.api.dto.BadgeResponse;
+import com.ecocircular.ecocircular.gamification.api.dto.MissionResponse;
 import com.ecocircular.ecocircular.gamification.application.GamificationService;
 import com.ecocircular.ecocircular.gamification.domain.*;
 import org.junit.jupiter.api.AfterEach;
@@ -78,9 +80,16 @@ class GamificationControllerTest {
 
     @Test
     void getUserBadges_returns200WithList() throws Exception {
-        Badge badge = new Badge(UUID.randomUUID(), "Primer Reciclaje", "desc", "ICON");
-        UserBadge ub = new UserBadge(USER_ID, badge, java.time.LocalDateTime.now());
-        when(gamificationService.getBadges(TENANT_ID, USER_ID)).thenReturn(List.of(ub));
+        BadgeResponse badgeResponse = new BadgeResponse(
+                UUID.randomUUID(),
+                "Primer Reciclaje",
+                "desc",
+                "RECYCLE_1",
+                java.time.LocalDateTime.now()
+        );
+
+        when(gamificationService.getBadges(TENANT_ID, USER_ID))
+                .thenReturn(List.of(badgeResponse));
 
         mockMvc.perform(get("/api/gamification/users/{id}/badges", USER_ID))
                 .andExpect(status().isOk())
@@ -101,12 +110,26 @@ class GamificationControllerTest {
     // ── GET /api/gamification/users/{userId}/missions ───────────────────────
 
     @Test
-    void getUserMissions_returns200() throws Exception {
-        when(gamificationService.getMissions(TENANT_ID, USER_ID)).thenReturn(List.of());
+    void getUserMissions_returns200WithList() throws Exception {
+        MissionResponse missionResponse = new MissionResponse(
+                UUID.randomUUID(),
+                "Primer Paso Verde",
+                "Realiza tu primera entrega",
+                MissionStatus.EN_PROGRESO,
+                50,
+                0.5,
+                1.0,
+                50,
+                java.time.LocalDate.now().plusDays(10)
+        );
+
+        when(gamificationService.getMissions(TENANT_ID, USER_ID))
+                .thenReturn(List.of(missionResponse));
 
         mockMvc.perform(get("/api/gamification/users/{id}/missions", USER_ID))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].name").value("Primer Paso Verde"));
     }
 
     // ── GET /api/gamification/users/{userId}/recommendation ─────────────────
